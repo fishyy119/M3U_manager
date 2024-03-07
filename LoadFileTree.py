@@ -80,14 +80,17 @@ class FileTreeMatcher:
                 new_path_nn = new_path + "\\" + name  # 用于规避引用传递
                 self._compare_file_trees(new_node, old_tree, path_mapping, new_path_nn)
             else:  # 如果是文件节点
-                old_path = self._find_file_in_tree(name, old_tree, '')
+                old_path, extension = self._find_file_in_tree(name, old_tree, '')
                 if old_path is not None:  # 如果在旧文件树中存在相同文件
                     if old_path != new_path:
                         if old_path[0] == "\\":
                             old_path = old_path[1:]  # 前面会多个反斜杠，去掉
                         if new_path[0] == "\\":
                             new_path = new_path[1:]
-                        path_mapping[old_path] = new_path
+
+                        # 只存储路径不存储歌曲文件名会导致意想不到的麻烦
+                        path_mapping[os.path.join(old_path, name + extension)] =\
+                            os.path.join(new_path, name + extension)
 
     def _find_file_in_tree(self, 
                            file_name: str, 
@@ -97,12 +100,12 @@ class FileTreeMatcher:
         for name, node in tree.items():
             if isinstance(node, dict):
                 old_path_oo = old_path + "\\" + name  # 用于规避引用传递
-                result = self._find_file_in_tree(file_name, node, old_path_oo)
-                if result:
-                    return result
+                result1, result2 = self._find_file_in_tree(file_name, node, old_path_oo)
+                if result1:
+                    return result1, result2
             elif file_name == name:
-                return old_path
-        return None
+                return old_path, node  # 此处取出后缀名用于生成map
+        return None, None
     
 class SettingLoader:
     DEFAULT_SETTINGS = {

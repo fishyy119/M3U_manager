@@ -19,12 +19,12 @@ def update_m3u_file(m3u_directory: str,
         for line in f:
             # 处理每一行的路径
             old_path = line.strip()  # 移除行尾的换行符
-            directory, file_name = os.path.split(old_path)  # 获取文件名
+            # directory, file_name = os.path.split(old_path)  # 获取文件名
             # 如果在路径映射中找到了对应的新路径
-            if directory in path_mapping:
-                new_directory = path_mapping[directory]  # 获取新路径
+            if old_path in path_mapping.keys():
+                new_line = path_mapping[old_path]  # 获取新路径
                 # 将新路径与文件名拼接，并添加到更新后的列表中
-                updated_paths.append(os.path.join(new_directory, file_name))
+                updated_paths.append(new_line)
             else:
                 # 如果路径映射中没有对应的新路径，则保持原路径不变
                 updated_paths.append(old_path)
