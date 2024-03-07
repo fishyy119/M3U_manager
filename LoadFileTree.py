@@ -82,12 +82,12 @@ class FileTreeMatcher:
             else:  # 如果是文件节点
                 old_path, extension = self._find_file_in_tree(name, old_tree, '')
                 if old_path is not None:  # 如果在旧文件树中存在相同文件
+                    if old_path[0] == "\\":
+                        old_path = old_path[1:]  # 前面会多个反斜杠，去掉
+                    if new_path[0] == "\\":
+                        new_path = new_path[1:]
+                        
                     if old_path != new_path:
-                        if old_path[0] == "\\":
-                            old_path = old_path[1:]  # 前面会多个反斜杠，去掉
-                        if new_path[0] == "\\":
-                            new_path = new_path[1:]
-
                         # 只存储路径不存储歌曲文件名会导致意想不到的麻烦
                         path_mapping[os.path.join(old_path, name + extension)] =\
                             os.path.join(new_path, name + extension)
@@ -152,5 +152,6 @@ if __name__ == "__main__":
 
     match_map = file_tree_matcher.get_path_mapping(file_tree_matcher_old.file_tree)
     with open('map.json', 'w', encoding='utf-8') as f:
+            print(f"匹配完毕，共匹配到{len(match_map)}项")
             f.write(json.dumps(match_map, ensure_ascii=False, indent=4))
     
