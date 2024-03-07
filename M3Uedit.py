@@ -38,7 +38,6 @@ if __name__ == "__main__":
     setting_loader = SettingLoader('setting.json')
     settings = setting_loader.read_settings()
     m3u_directory = settings['m3u_directory']  # m3u存储路径
-    m3u_directory = r'C:\Users\18309\Music\Dopamine\Playlists'
     mapping_file = 'map.json'  # 外部的 map.json 文件路径
     
     for m3uname in os.listdir(m3u_directory):
