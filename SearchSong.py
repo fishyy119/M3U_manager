@@ -56,7 +56,7 @@ if __name__ == "__main__":
         print('请首先运行"LoadFileTree.py"获取file_tree文件')
         exit()
 
-    count_filetree = find_file_in_tree(file_tree, search_result['search_in_filetree'], '',[0], songs)
+    count_filetree = find_file_in_tree(file_tree, search_result['search_in_filetree'], '', [0], songs)
     count_m3u = find_file_in_m3u(m3u_directory, search_result['search_in_m3u'], songs)
     with open('report_search_song.json', 'w', encoding='utf-8') as f:
         print(f"在音乐库中发现{count_filetree}个匹配项，在m3u文件中发现{count_m3u}个匹配项")

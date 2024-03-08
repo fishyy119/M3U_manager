@@ -32,7 +32,7 @@
 根据`map.json`文件，自动m3u文件中的路径更新
 ### SearchSong.py  
 在m3u文件目录与音乐库路径下扫描`setting.json`中记录的黑名单歌曲，生成报告`report_search_song`  
-### ReportSameSong.py（计划添加）
+### ReportSameSong.py
 寻找音乐库路径下全部同名歌曲，生成报告`report_same_song`
 
 
