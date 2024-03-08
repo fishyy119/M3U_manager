@@ -2,7 +2,6 @@ import os
 import json
 '''
 todo:
-增加重名歌曲报告功能
 '''
 class FileTreeMatcher:
     def __init__(self,
@@ -12,7 +11,7 @@ class FileTreeMatcher:
                  ) -> None:
         self.root_dir = root_dir  # 存储音乐库的根目录
         self.white_extension = white_extension
-        self.black_song = black_song
+        self.black_song = black_song  # 用于黑名单跳过（没有开关，若关闭在初始化是传入空列表即可）
         self.file_tree = {}
 
     def build_file_tree(self) -> None:
