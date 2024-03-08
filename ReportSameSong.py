@@ -5,7 +5,7 @@ from LoadFileTree import SettingLoader
 def scan_file_tree(node: dict,
                    search_result: dict,
                    path: str
-                   ) -> int:
+                   )  -> None:
     for name, new_node in node.items():
             if isinstance(new_node, dict):  # 如果是目录节点
                 new_path = path + "\\" + name  # 用于规避引用传递
