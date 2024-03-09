@@ -1,6 +1,10 @@
 import os
 import json
-from LoadFileTree import SettingLoader
+from LoadFileTree import SettingLoader, FileTreeMatcher
+'''
+搜索黑名单中歌曲在m3u及音乐库中位置
+搜索report_not_found.json中歌曲在m3u中位置
+'''
 
 def find_file_in_m3u(m3u_directory: str,
                      search_result: dict,
@@ -41,20 +45,47 @@ def find_file_in_tree(node: dict,
                     count[0] = count[0] + 1
     return count[0]
 
+def get_targe() -> list:
+    while True:
+        try:
+            target_int = int(input("请输入:\n1:搜素setting.json中黑名单歌曲\n2:搜索report_not_found.json中歌曲\n"))
+            if target_int == 1:
+                target = black_song
+                break
+            elif target_int == 2:
+                with open('report_not_found.json', 'r', encoding='utf-8') as f:
+                    song_not_found = list(json.load(f))
+                target = song_not_found
+                break
+            else:
+                print("只能为1或2，重新输入")
+                continue
+        except FileNotFoundError:
+            print("不存在report_not_found.json，请先运行ReportSongNotFound.py")
+            exit()
+        except ValueError as e:
+            print(f"{e} 重新输入")
+            continue
+    return target
+
 if __name__ == "__main__":
     setting_loader = SettingLoader('setting.json')
     settings = setting_loader.read_settings()
-    songs = settings['black_song']  # 计划搜索的歌曲名（带后缀），此处为搜索黑名单
     root_dir = settings['root_dir']  # 音乐库文件
     m3u_directory = settings['m3u_directory']  # m3u存储路径
-    search_result = {'search_in_filetree': {}, 'search_in_m3u': {}}  # 两处搜索结果存储于同一个字典
+    white_extension = settings['white_extension']  # 音乐后缀名识别
+    black_song = settings['black_song']  # 跳过匹配的歌曲黑名单
+    
+    # 更新并加载文件树
+    file_tree_matcher = FileTreeMatcher(root_dir, white_extension, black_song)
+    file_tree_matcher.build_file_tree()
+    file_tree_matcher.save_to_json("file_tree.json")
+    with open('file_tree.json', 'r', encoding='utf-8') as f:
+        file_tree = json.load(f)
 
-    try:
-        with open('file_tree.json', 'r', encoding='utf-8') as f:
-            file_tree = json.load(f)
-    except FileNotFoundError:
-        print('请首先运行"LoadFileTree.py"获取file_tree文件')
-        exit()
+    search_result = {'search_in_filetree': {}, 'search_in_m3u': {}}  # 两处搜索结果存储于同一个字典
+    
+    songs = get_targe()  # 获取搜索目标
 
     count_filetree = find_file_in_tree(file_tree, search_result['search_in_filetree'], '', [0], songs)
     count_m3u = find_file_in_m3u(m3u_directory, search_result['search_in_m3u'], songs)

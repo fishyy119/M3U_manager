@@ -30,7 +30,7 @@
 
 ### 黑名单  
 * 以`sample.mp3`的形式存储黑名单歌曲
-* 在开启黑名单的情况下，程序生成的树状目录中仍然包含黑名单歌曲，但在匹配时不会对黑名单歌曲匹配。  
+* 在开启黑名单的情况下，程序生成的树状目录中**仍然包含黑名单歌曲**，但在匹配时不会对黑名单歌曲匹配。  
 
 ### LoadFileTree.py
 * 扫描音乐库路径，生成包含全部歌曲的树状目录，以`file_tree.json`文件存储。  
@@ -42,12 +42,16 @@
 * 根据`map.json`文件，自动m3u文件中的路径更新
 
 ### SearchSong.py  
-* 在m3u文件目录与音乐库路径下扫描`setting.json`中记录的黑名单歌曲，生成报告`report_search_song.json`  
+* 更新`file_tree.json`文件
+* （选项1）在m3u文件目录与音乐库路径下扫描`setting.json`中记录的黑名单歌曲，生成报告`report_search_song.json`  
+* （选项2）在m3u文件目录与音乐库路径下扫描`report_not_found.json`中记录歌曲，生成报告`report_search_song.json`
 
 ### ReportSameSong.py
+* 更新`file_tree.json`文件
 * 寻找音乐库路径下全部同名歌曲，生成报告`report_same_song.json`
 
-### ReportSongNotFound.py  
+### ReportSongNotFound.py 
+* 更新`file_tree.json`文件 
 * 针对歌曲文件名被更改的情况，在音乐库路径下扫描m3u给出的歌曲名称，报告不存在的歌曲，生成报告`report_not_found.json`  
 * **此功能只会报告m3u文件中存在但被更名的歌曲名称**，对于不在m3u文件中的歌曲，其更名无需处理
 

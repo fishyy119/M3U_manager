@@ -1,6 +1,9 @@
 import os
 import json
-from LoadFileTree import SettingLoader
+from LoadFileTree import SettingLoader, FileTreeMatcher
+'''
+报告音乐库中同名音乐
+'''
 
 def scan_file_tree(node: dict,
                    search_result: dict,
@@ -25,14 +28,18 @@ if __name__ == "__main__":
     setting_loader = SettingLoader('setting.json')
     settings = setting_loader.read_settings()
     root_dir = settings['root_dir']  # 音乐库文件
-    search_result = {}  
+    m3u_directory = settings['m3u_directory']  # m3u存储路径
+    white_extension = settings['white_extension']  # 音乐后缀名识别
+    black_song = settings['black_song']  # 跳过匹配的歌曲黑名单
+    
+    # 更新并加载文件树
+    file_tree_matcher = FileTreeMatcher(root_dir, white_extension, black_song)
+    file_tree_matcher.build_file_tree()
+    file_tree_matcher.save_to_json("file_tree.json")
+    with open('file_tree.json', 'r', encoding='utf-8') as f:
+        file_tree = json.load(f)
 
-    try:
-        with open('file_tree.json', 'r', encoding='utf-8') as f:
-            file_tree = json.load(f)
-    except FileNotFoundError:
-        print('请首先运行"LoadFileTree.py"获取file_tree文件')
-        exit()
+    search_result = {}  
 
     scan_file_tree(file_tree, search_result, '')
     search_same_file(search_result)
