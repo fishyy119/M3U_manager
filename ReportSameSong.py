@@ -21,8 +21,10 @@ def scan_file_tree(node: dict,
 
 def search_same_file(search_result: dict) -> None:
     for song in list(search_result.keys()):
-        if len(search_result[song]) <= 1:
+        if len(search_result[song]) <= 1 and song != '仅显示歌曲':
             del search_result[song]
+    search_result['仅显示歌曲'] = list(search_result.keys())
+    search_result['仅显示歌曲'].remove('仅显示歌曲')
 
 if __name__ == "__main__":
     setting_loader = SettingLoader('setting.json')
@@ -39,12 +41,12 @@ if __name__ == "__main__":
     with open('file_tree.json', 'r', encoding='utf-8') as f:
         file_tree = json.load(f)
 
-    search_result = {}  
+    search_result = {'仅显示歌曲': []}  
 
     scan_file_tree(file_tree, search_result, '')
     search_same_file(search_result)
     count_same = len(search_result)
     with open('report_same_song.json', 'w', encoding='utf-8') as f:
-        print(f"在音乐库中发现{count_same}个重复项")
+        print(f"在音乐库中发现{count_same - 1}个重复项")
         f.write(json.dumps(search_result, ensure_ascii=False, indent=4))
 
