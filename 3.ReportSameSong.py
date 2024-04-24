@@ -1,6 +1,7 @@
 import os
 import json
-from LoadFileTree import SettingLoader, FileTreeMatcher
+from FileTreeMatcher import FileTreeMatcher
+from SettingLoader import SettingLoader
 '''
 报告音乐库中同名音乐
 '''

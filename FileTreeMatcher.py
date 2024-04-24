@@ -1,8 +1,5 @@
-import os
-import json
-'''
-todo:
-'''
+import os, json
+
 class FileTreeMatcher:
     def __init__(self,
                  root_dir: str,
@@ -113,60 +110,3 @@ class FileTreeMatcher:
             elif file_name == name:
                 return old_path, node  # 此处取出后缀名用于生成map
         return None, None
-    
-class SettingLoader:
-    DEFAULT_SETTINGS = {
-        'root_dir': '/path/to/songs/root/directory',
-        'm3u_directory': '/path/to/m3u/files',
-        'white_extension': ['.mp3', '.wav', '.flac'],
-        'black_list_state': False,
-        'black_song': ['sample.mp3']
-    }
-
-    def __init__(self, 
-                 filename: str
-                 ) -> None:
-        self.filename = filename
-
-    def read_settings(self) -> dict:
-        try:
-            with open(self.filename, 'r', encoding='utf-8') as f:
-                settings = json.load(f)
-        except FileNotFoundError:
-            print(f"未发现设置文件'{self.filename}'，已自动创建，请前往设置")
-            settings = self.DEFAULT_SETTINGS
-            self.save_settings(settings)
-            exit(0)
-        return settings
-
-    def save_settings(self, 
-                      settings: dict
-                      ) -> None:
-        with open(self.filename, 'w', encoding='utf-8') as f:
-            json.dump(settings, f, indent=4)
-
-if __name__ == "__main__":
-    setting_loader = SettingLoader('setting.json')
-    settings = setting_loader.read_settings()
-    root_dir = settings['root_dir']  # 音乐库文件
-    m3u_directory = settings['m3u_directory']  # m3u存储路径
-    white_extension = settings['white_extension']  # 音乐后缀名识别
-    black_list_state = settings['black_list_state']  # 黑名单开关
-    if black_list_state:
-        black_song = settings['black_song']  # 跳过匹配的歌曲黑名单
-    else:
-        black_song = []
-
-    file_tree_matcher_old = FileTreeMatcher(root_dir, white_extension, black_song)
-    file_tree_matcher_old.build_file_tree_from_m3u(m3u_directory)
-    file_tree_matcher_old.save_to_json("file_tree_m3u.json")
-
-    file_tree_matcher = FileTreeMatcher(root_dir, white_extension, black_song)
-    file_tree_matcher.build_file_tree()
-    file_tree_matcher.save_to_json("file_tree.json")
-
-    match_map = file_tree_matcher.get_path_mapping(file_tree_matcher_old.file_tree)
-    with open('map.json', 'w', encoding='utf-8') as f:
-        print(f"匹配完毕，共匹配到{len(match_map)}项")
-        f.write(json.dumps(match_map, ensure_ascii=False, indent=4))
-    

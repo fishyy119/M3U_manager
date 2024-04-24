@@ -1,6 +1,6 @@
 import os
 import json
-from LoadFileTree import SettingLoader
+from SettingLoader import SettingLoader
 
 def update_m3u_file(m3u_directory: str,
                     input_file: str, 

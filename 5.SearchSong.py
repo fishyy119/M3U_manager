@@ -1,6 +1,7 @@
 import os
 import json
-from LoadFileTree import SettingLoader, FileTreeMatcher
+from SettingLoader import SettingLoader
+from FileTreeMatcher import FileTreeMatcher
 '''
 搜索黑名单中歌曲在m3u及音乐库中位置
 搜索report_not_found.json中歌曲在m3u中位置

@@ -1,6 +1,7 @@
 import os
 import json
-from LoadFileTree import SettingLoader, FileTreeMatcher
+from SettingLoader import SettingLoader
+from FileTreeMatcher import FileTreeMatcher
 '''
 报告m3u中因改名而失效的音乐
 '''
