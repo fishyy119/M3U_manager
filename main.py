@@ -1,9 +1,11 @@
 import os
+import random
+import json
 import tkinter as tk
 from tkinter import filedialog
 from SettingLoader import SettingLoader
 from MergeM3UWindow import MergeM3UWindow
-import json
+
 
 class M3UMManagerApp:
     def __init__(self, root):
@@ -15,25 +17,29 @@ class M3UMManagerApp:
         # 存储m3u文件的路径(与m3u_listbox同序)
         self.m3u_path_list = []
         
-        # 创建m3u文件列表框
+        # 列表框：m3u列表
         self.m3u_listbox = tk.Listbox(root, width=60, height=30)
         # 无下划线 失去焦点选中不变 选中颜色
         self.m3u_listbox.configure(activestyle='none', exportselection=False, selectbackground='green')
         self.m3u_listbox.pack(side=tk.LEFT, padx=10, pady=10, fill=tk.BOTH, expand=True)
         self.m3u_listbox.bind("<<ListboxSelect>>", self.show_selected_playlist)
         
-        # 创建歌曲列表框
+        # 列表框：歌曲
         self.song_listbox = tk.Listbox(root, width=60, height=30)
         self.song_listbox.configure(activestyle='none')
         self.song_listbox.pack(side=tk.RIGHT, padx=10, pady=10, fill=tk.BOTH, expand=True)
         
-        # 创建浏览按钮
+        # 按钮：刷新
         browse_button = tk.Button(root, text="Browse", command=self.browse_directory)
         browse_button.pack(side=tk.BOTTOM, padx=10, pady=10)
         
         # 按钮：创建新m3u文件
         self.open_child_window_button = tk.Button(self.root, text="创建新m3u文件", command=self.open_merge_m3u_window)
         self.open_child_window_button.pack(padx=10, pady=10)
+        
+        # 按钮：打乱播放列表
+        shuffle_button = tk.Button(root, text="Shuffle", command=self.shuffle_playlist)
+        shuffle_button.pack(side=tk.BOTTOM, padx=10, pady=(0, 10))
         
         # 加载播放列表文件
         self.load_playlist_files()
@@ -70,6 +76,28 @@ class M3UMManagerApp:
         # 用以解决弹出警告窗口后该窗口被销毁的问题
         self.merge_m3u_window.top.wait_window()
 
+    def shuffle_playlist(self):
+        # 打乱选中的播放列表
+        files = self.m3u_listbox.curselection()
+        if files:
+            for index in files:
+                playlist_file = self.m3u_path_list[index]
+                playlist = []
+                with open(playlist_file, "r", encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#"):
+                            playlist.append(line)
+                list_index = list(range(len(playlist)))
+                random.shuffle(list_index)  # 对索引打乱，写入时直接映射
+                with open(playlist_file, "w", encoding='utf-8') as f:
+                    for index in list_index:
+                        f.write(f"{playlist[index]}\n")
+            # 重新加载播放列表文件
+            self.load_playlist_files()
+        else:
+            tk.messagebox.showerror("Error", "没有指定m3u文件")
+            
     def browse_directory(self):
         # 浏览并加载新的播放列表文件
         self.load_playlist_files()

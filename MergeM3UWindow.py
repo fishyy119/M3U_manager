@@ -1,11 +1,11 @@
-"""
-子窗口：由已有m3u文件生成新m3u文件
-"""
 import tkinter as tk
 import os
 
 
 class MergeM3UWindow:
+    """
+    子窗口：由已有m3u文件生成新m3u文件
+    """
     def __init__(self, parent, m3u_path_list, m3u_directory):
         self.parent = parent
         self.m3u_path_list = m3u_path_list
@@ -29,7 +29,6 @@ class MergeM3UWindow:
         self.button = tk.Button(self.top, text="生成M3U", command=self.generate_m3u, borderwidth=1, relief='raised')
         self.button.pack(fill=tk.X, padx=10, pady=(0, 10))
         
-
     def show_m3u(self):
         self.listbox.delete(0, tk.END)
         for f in self.m3u_path_list:
