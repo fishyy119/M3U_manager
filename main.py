@@ -2,6 +2,7 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 from SettingLoader import SettingLoader
+from MergeM3UWindow import MergeM3UWindow
 import json
 
 class M3UMManagerApp:
@@ -29,6 +30,10 @@ class M3UMManagerApp:
         # 创建浏览按钮
         browse_button = tk.Button(root, text="Browse", command=self.browse_directory)
         browse_button.pack(side=tk.BOTTOM, padx=10, pady=10)
+        
+        # 按钮：创建新m3u文件
+        self.open_child_window_button = tk.Button(self.root, text="创建新m3u文件", command=self.open_merge_m3u_window)
+        self.open_child_window_button.pack(padx=10, pady=10)
         
         # 加载播放列表文件
         self.load_playlist_files()
@@ -59,6 +64,11 @@ class M3UMManagerApp:
                 for line in f:
                     if line.strip() and not line.startswith("#"):
                         self.song_listbox.insert(tk.END, os.path.basename(line))
+
+    def open_merge_m3u_window(self):
+        self.merge_m3u_window = MergeM3UWindow(self.root, self.m3u_path_list, self.settings.get("m3u_directory"))
+        # 用以解决弹出警告窗口后该窗口被销毁的问题
+        self.merge_m3u_window.top.wait_window()
 
     def browse_directory(self):
         # 浏览并加载新的播放列表文件

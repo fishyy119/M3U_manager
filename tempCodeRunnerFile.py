@@ -1,1 +1,0 @@
-self.m3u_listbox.configure(activestyle='none')
