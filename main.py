@@ -41,6 +41,10 @@ class M3UMManagerApp:
         shuffle_button = tk.Button(root, text="Shuffle", command=self.shuffle_playlist)
         shuffle_button.pack(side=tk.BOTTOM, padx=10, pady=(0, 10))
         
+        # 按钮：播放列表去重
+        deduplicate_button = tk.Button(root, text="Deduplicate", command=self.deduplicate_playlist)
+        deduplicate_button.pack(side=tk.BOTTOM, padx=10, pady=(0, 10))
+        
         # 加载播放列表文件
         self.load_playlist_files()
 
@@ -50,6 +54,12 @@ class M3UMManagerApp:
             directory = self.settings.get("m3u_directory")
             if directory:
                 self.playlist_directory = directory
+                
+                # 记录当前选中项（如果未选择则默认第一项）
+                selection_index = self.m3u_listbox.curselection()
+                if not selection_index:
+                    selection_index = (0,)
+                
                 self.m3u_listbox.delete(0, tk.END)
                 # 遍历目录及其子目录下的所有文件，将 .m3u 文件添加到文件列表框中
                 for root, _, files in os.walk(directory):
@@ -57,10 +67,14 @@ class M3UMManagerApp:
                         if file.endswith(".m3u"):
                             self.m3u_listbox.insert(tk.END, file)
                             self.m3u_path_list.append(os.path.join(root, file))
+    
+                # 设置选中的索引
+                self.m3u_listbox.selection_set(selection_index)
+                self.show_selected_playlist()
 
-    def show_selected_playlist(self, event):
+    def show_selected_playlist(self, event=None):
         # 当用户选择播放列表文件时，显示该文件中的歌曲列表
-        selection = event.widget.curselection()
+        selection = self.m3u_listbox.curselection()
         if selection:
             index = selection[0]
             playlist_file = self.m3u_path_list[index]
@@ -93,6 +107,23 @@ class M3UMManagerApp:
                 with open(playlist_file, "w", encoding='utf-8') as f:
                     for index in list_index:
                         f.write(f"{playlist[index]}\n")
+            # 重新加载播放列表文件
+            self.load_playlist_files()
+        else:
+            tk.messagebox.showerror("Error", "没有指定m3u文件")
+            
+    def deduplicate_playlist(self):
+        # 去重选中的播放列表
+        files = self.m3u_listbox.curselection()
+        if files:
+            for index in files:
+                playlist_file = self.m3u_path_list[index]
+                with open(playlist_file, "r", encoding='utf-8') as f:
+                    lines = f.readlines()
+                lines_set = set(lines)
+                with open(playlist_file, "w", encoding='utf-8') as f:
+                    for line in lines_set:
+                        f.write(line)
             # 重新加载播放列表文件
             self.load_playlist_files()
         else:
