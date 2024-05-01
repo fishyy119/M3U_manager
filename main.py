@@ -29,17 +29,26 @@ class M3UMManagerApp:
         self.song_listbox.configure(activestyle='none', exportselection=False, selectbackground='green')
         self.song_listbox.pack(side=tk.RIGHT, padx=10, pady=10, fill=tk.BOTH, expand=True)
         
+        # Frame：显示信息
+        info_frame = tk.Frame(root, bd=2, relief=tk.GROOVE)
+        info_frame.pack(side=tk.TOP, padx=10, pady=10, fill=tk.BOTH)
+        
+        self.m3u_info = tk.Label(info_frame)
+        self.m3u_info.pack()
+        self.playlist_info = tk.Label(info_frame)
+        self.playlist_info.pack()
+        
         # Frame：容纳刷新、创建两个按钮
         refresh_create_frame = tk.Frame(root, bd=2, relief=tk.GROOVE)
-        refresh_create_frame.pack(side=tk.BOTTOM, padx=10, pady=10)
+        refresh_create_frame.pack(side=tk.BOTTOM, padx=10, pady=10, fill=tk.X)
         
         # 按钮：刷新
         refresh_button = tk.Button(refresh_create_frame, text="刷新", command=self.refresh_directory)
-        refresh_button.grid(row=1, column=1, padx=10, pady=(10,10), ipadx=5, sticky='ew')
+        refresh_button.pack(padx=10, pady=10, ipadx=5, side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         # 按钮：创建新m3u文件
         self.open_child_window_button = tk.Button(refresh_create_frame, text="创建新m3u文件", command=self.open_merge_m3u_window)
-        self.open_child_window_button.grid(row=1, column=2, padx=10, pady=(10,10), ipadx=5, sticky='ew')
+        self.open_child_window_button.pack(padx=10, pady=10, ipadx=5, side=tk.RIGHT, fill=tk.BOTH, expand=True)
         
         # Frame：容纳打乱、去重、上移、下移、置顶、删除六个按钮
         editm3u_frame = tk.Frame(root, bd=2, relief=tk.GROOVE)
@@ -90,7 +99,8 @@ class M3UMManagerApp:
                         if file.endswith(".m3u"):
                             self.m3u_listbox.insert(tk.END, file)
                             self.m3u_path_list.append(os.path.join(root, file))
-    
+                self.m3u_info.config(text=f"m3u文件总数：{len(self.m3u_path_list)}")
+                
                 # 设置选中的索引
                 self.m3u_listbox.selection_set(selection_index)
                 self.show_selected_playlist()
@@ -107,6 +117,7 @@ class M3UMManagerApp:
                 for line in f:
                     if line.strip() and not line.startswith("#"):
                         self.song_listbox.insert(tk.END, os.path.basename(line))
+            self.playlist_info.config(text=f"列表内歌曲总数：{self.song_listbox.size()}")
 
     def open_merge_m3u_window(self):
         self.merge_m3u_window = MergeM3UWindow(self.root, self.m3u_path_list, self.settings.get("m3u_directory"))
