@@ -23,17 +23,27 @@ class MergeM3UWindow:
         # 创建列表框(选择m3u)
         self.listbox = tk.Listbox(self.top, selectmode=tk.MULTIPLE, width=30, height=25, borderwidth=0.5, relief="solid")
         self.listbox.configure(activestyle='none', exportselection=False, selectbackground='green')
-        self.listbox.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
         self.show_m3u()
 
         # 创建输入框(新m3u文件名称)
         self.entry = tk.Entry(self.top, width=30, borderwidth=0.5, relief="solid")
         self.entry.insert(0, '!新建列表.m3u')
-        self.entry.pack(fill=tk.X, padx=10, pady=(0, 10))
 
         # 创建按钮(生成)
         self.button = tk.Button(self.top, text="生成M3U", command=self.generate_m3u, borderwidth=1, relief='raised')
-        self.button.pack(fill=tk.X, padx=10, pady=(0, 10))
+        
+        
+        ############################################################################
+        # 布局
+        self.top.minsize(250, 300)
+        self.top.grid_rowconfigure(0, weight=1)
+        self.top.grid_columnconfigure(0, weight=1)
+        
+        self.listbox.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        self.entry.grid(row=1, column=0, sticky="ew", padx=10)
+        self.button.grid(row=2, column=0, sticky="ew", padx=10, pady=10)
+        ############################################################################
         
     def show_m3u(self):
         self.listbox.delete(0, tk.END)
