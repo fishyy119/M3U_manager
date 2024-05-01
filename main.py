@@ -25,14 +25,16 @@ class M3UMManagerApp:
         self.playlist_info.pack()  # 歌曲个数
         
         ############################################################################
-        # Frame：容纳刷新、创建两个按钮
+        # Frame：容纳刷新、删除、创建
         refresh_create_frame = tk.Frame(root, bd=2, relief=tk.GROOVE)
         
         refresh_button = tk.Button(refresh_create_frame, text="刷新", command=self.refresh_directory)
-        self.open_child_window_button = tk.Button(refresh_create_frame, text="创建新m3u文件", command=self.open_merge_m3u_window)
+        delete_m3u_button = tk.Button(refresh_create_frame, text="删除m3u", command=self.delete_m3u)
+        self.open_child_window_button = tk.Button(refresh_create_frame, text="创建m3u", command=self.open_merge_m3u_window)
         
         refresh_button.pack(padx=10, pady=10, ipadx=5, side=tk.LEFT, fill=tk.BOTH, expand=True)  # 刷新
-        self.open_child_window_button.pack(padx=10, pady=10, ipadx=5, side=tk.RIGHT, fill=tk.BOTH, expand=True)  # 创建新m3u文件
+        delete_m3u_button.pack(padx=10, pady=5, ipadx=5, side=tk.TOP, fill=tk.BOTH, expand=True)  # 删除m3u
+        self.open_child_window_button.pack(padx=10, pady=5, ipadx=5, side=tk.BOTTOM, fill=tk.BOTH, expand=True)  # 创建新m3u文件
         
         ############################################################################
         # Frame：容纳打乱、去重、上移、下移、置顶、删除六个按钮
@@ -94,6 +96,7 @@ class M3UMManagerApp:
             directory = self.settings.get("m3u_directory")
             if directory:
                 self.playlist_directory = directory
+                self.m3u_path_list.clear()  # 清空
                 
                 # 记录当前选中项（如果未选择则默认第一项）
                 selection_index = self.m3u_listbox.curselection()
@@ -126,11 +129,6 @@ class M3UMManagerApp:
                     if line.strip() and not line.startswith("#"):
                         self.song_listbox.insert(tk.END, os.path.basename(line))
             self.playlist_info.config(text=f"列表内歌曲总数：{self.song_listbox.size()}")
-
-    def open_merge_m3u_window(self):
-        self.merge_m3u_window = MergeM3UWindow(self.root, self.m3u_path_list, self.settings.get("m3u_directory"))
-        # 用以解决弹出警告窗口后该窗口被销毁的问题
-        self.merge_m3u_window.top.wait_window()
 
     def edit_m3u(self, m3u_path, operation, index=0):
         """
@@ -191,6 +189,7 @@ class M3UMManagerApp:
         if files:
             m3u_path = self.m3u_path_list[files[0]]
             self.edit_m3u(m3u_path, 'deduplicate')
+            self.playlist_info.config(text=f"列表内歌曲总数：{self.song_listbox.size()}")
         else:
             tk.messagebox.showerror("Error", "没有指定m3u文件")
             
@@ -240,10 +239,29 @@ class M3UMManagerApp:
             for i in reversed(selection):
                 self.song_listbox.delete(i)
                 self.edit_m3u(m3u_path, 'del', i)
+                self.playlist_info.config(text=f"列表内歌曲总数：{self.song_listbox.size()}")
             
+    def open_merge_m3u_window(self):
+        self.merge_m3u_window = MergeM3UWindow(self.root, self.m3u_path_list, self.settings.get("m3u_directory"))
+        # 用以解决弹出警告窗口后该窗口被销毁的问题
+        self.merge_m3u_window.top.wait_window()
+        
     def refresh_directory(self):
         # 刷新播放列表
         self.load_playlist_files()
+        
+    def delete_m3u(self):
+        # 获取选中的 m3u 文件
+        selected_index = self.m3u_listbox.curselection()
+        if selected_index:
+            # 弹出确认提示框
+            result = tk.messagebox.askokcancel("确认删除", "确定要删除选中的 m3u 文件吗？")
+            if result:
+                # 执行删除操作
+                file_to_delete = self.m3u_path_list[selected_index[0]]
+                os.remove(file_to_delete)
+                # 更新列表框
+                self.refresh_directory()
 
 if __name__ == "__main__":
     # 创建 Tkinter 窗口，并启动应用程序

@@ -5,6 +5,12 @@ import os
 class MergeM3UWindow:
     """
     子窗口：由已有m3u文件生成新m3u文件
+        parent：
+            父窗口（即主窗口）
+        m3u_path_list：
+            所有m3u的路径
+        m3u_directory：
+            新创建的m3u的根目录
     """
     def __init__(self, parent, m3u_path_list, m3u_directory):
         self.parent = parent
