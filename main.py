@@ -14,24 +14,16 @@ class M3UMManagerApp:
         self.setting_loader = SettingLoader("setting.json")
         self.settings = self.setting_loader.read_settings()
         
-        # 存储m3u文件的路径(与m3u_listbox同序)
-        self.m3u_path_list = []
-        
-        # 列表框：m3u列表
-        self.m3u_listbox = tk.Listbox(root, width=60, height=30)
-        # 无下划线 失去焦点选中不变 选中颜色
-        self.m3u_listbox.configure(activestyle='none', exportselection=False, selectbackground='green')
-        self.m3u_listbox.pack(side=tk.LEFT, padx=10, pady=10, fill=tk.BOTH, expand=True)
-        self.m3u_listbox.bind("<<ListboxSelect>>", self.show_selected_playlist)
-        
-        # 列表框：歌曲
-        self.song_listbox = tk.Listbox(root, width=60, height=30)
-        self.song_listbox.configure(activestyle='none', exportselection=False, selectbackground='green')
-        self.song_listbox.pack(side=tk.RIGHT, padx=10, pady=10, fill=tk.BOTH, expand=True)
+        self.root.minsize(600, 400)
+        self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_columnconfigure(2, weight=1)
+        # 对于中间的按钮列，该行留空
+        # 此行用于吸收纵向的多余空间
+        self.root.grid_rowconfigure(2, weight=1)  
         
         # Frame：显示信息
         info_frame = tk.Frame(root, bd=2, relief=tk.GROOVE)
-        info_frame.pack(side=tk.TOP, padx=10, pady=10, fill=tk.BOTH)
+        info_frame.grid(row=0, column=1, sticky='ew', padx=10, pady=10)
         
         self.m3u_info = tk.Label(info_frame)
         self.m3u_info.pack()
@@ -40,7 +32,7 @@ class M3UMManagerApp:
         
         # Frame：容纳刷新、创建两个按钮
         refresh_create_frame = tk.Frame(root, bd=2, relief=tk.GROOVE)
-        refresh_create_frame.pack(side=tk.BOTTOM, padx=10, pady=10, fill=tk.X)
+        refresh_create_frame.grid(row=3, column=1, sticky='ews', padx=10, pady=10)
         
         # 按钮：刷新
         refresh_button = tk.Button(refresh_create_frame, text="刷新", command=self.refresh_directory)
@@ -51,8 +43,9 @@ class M3UMManagerApp:
         self.open_child_window_button.pack(padx=10, pady=10, ipadx=5, side=tk.RIGHT, fill=tk.BOTH, expand=True)
         
         # Frame：容纳打乱、去重、上移、下移、置顶、删除六个按钮
-        editm3u_frame = tk.Frame(root, bd=2, relief=tk.GROOVE)
-        editm3u_frame.pack(side=tk.TOP, padx=10, pady=10)
+        editm3u_frame = tk.Frame(root, bd=2, relief=tk.GROOVE, width=40)
+        editm3u_frame.grid(row=1, column=1, sticky='ew', padx=10, pady=10)
+        
         label = tk.Label(editm3u_frame, text="操作右侧列表：")
         label.grid(row=1, column=1, columnspan=4, pady=(0,10))
         
@@ -76,6 +69,22 @@ class M3UMManagerApp:
         
         self.btn_delete = tk.Button(editm3u_frame, text="删除", command=self.delete)
         self.btn_delete.grid(row=2, column=4, padx=5, pady=10, ipadx=5)
+        
+        
+        # 存储m3u文件的路径(与m3u_listbox同序)
+        self.m3u_path_list = []
+        
+        # 列表框：m3u列表
+        self.m3u_listbox = tk.Listbox(root, width=60, height=30)
+        # 无下划线 失去焦点选中不变 选中颜色
+        self.m3u_listbox.configure(activestyle='none', exportselection=False, selectbackground='green')
+        self.m3u_listbox.grid(row=0, column=0, rowspan=4, sticky="nsew", padx=10, pady=10)
+        self.m3u_listbox.bind("<<ListboxSelect>>", self.show_selected_playlist)
+        
+        # 列表框：歌曲
+        self.song_listbox = tk.Listbox(root, width=60, height=30)
+        self.song_listbox.configure(activestyle='none', exportselection=False, selectbackground='green')
+        self.song_listbox.grid(row=0, column=2, rowspan=4, sticky="nsew", padx=10, pady=10)
         
         # 加载播放列表文件
         self.load_playlist_files()
