@@ -7,7 +7,7 @@ from SettingLoader import SettingLoader
 from MergeM3UWindow import MergeM3UWindow
 """
 todo:
-    打开库
+    关于SettingLoader的窗口化适配
     设置界面
     整合12345
 """
@@ -16,7 +16,7 @@ class M3UMManagerApp:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("M3U Manager")
-        self.root.iconbitmap('img/favicon.ico')
+        # self.root.iconbitmap('img/favicon.ico')
         self.setting_loader = SettingLoader("setting.json")
         self.settings = self.setting_loader.read_settings()
         
