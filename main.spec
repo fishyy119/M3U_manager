@@ -34,5 +34,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['E:\\y19\\_\\new_python\\m3u文件微调\\img\\favicon.ico'],
+    icon=['img\\favicon.ico'],
 )
