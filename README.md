@@ -1,4 +1,4 @@
-# m3u_match_edit
+# M3U_manager
 #### 使用版本：Python 3.11.5
 
 ## 问题背景
