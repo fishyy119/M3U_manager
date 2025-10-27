@@ -3,3 +3,7 @@ __pycache__
 *.json
 dist/
 build/
+main.dist/
+main.build/
+main.onefile-build/
+M3U Manager.exe
