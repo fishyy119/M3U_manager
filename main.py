@@ -3,11 +3,12 @@ import os
 import random
 import tkinter as tk
 import tkinter.messagebox as messagebox
+from dataclasses import dataclass
 from tkinter import messagebox, simpledialog
-from typing import List
+from typing import List, Optional, cast
 
 from MergeM3UWindow import MergeM3UWindow
-from SettingLoader import SettingLoader
+from SettingLoader import SettingLoader, SettingsDict
 
 """
 todo:
@@ -18,12 +19,18 @@ todo:
 
 
 class M3UManagerApp:
-    def __init__(self, root: tk.Tk):
+    def __init__(self, root: tk.Tk, m3u_directory: str | None = None):
         self.root = root
         self.root.title("M3U Manager")
+        if m3u_directory is not None:
+            self.m3u_directory = m3u_directory
+        else:
+            success, result = SettingLoader("setting.json").read_settings()
+            if success:
+                self.m3u_directory = cast(SettingsDict, result)["m3u_directory"]
+            else:
+                messagebox.showerror("Error", cast(str, result))
         # self.root.iconbitmap("img/favicon.ico")
-        self.setting_loader = SettingLoader("setting.json")
-        self.settings = self.setting_loader.read_settings()
 
         ############################################################################
         # Frame：显示信息
@@ -118,32 +125,30 @@ class M3UManagerApp:
         self.load_playlist_files()
 
     def load_playlist_files(self):
-        # 从设置中读取播放列表目录
-        if self.settings:
-            directory = self.settings.get("m3u_directory")
-            if directory:
-                self.playlist_directory = directory
-                self.m3u_path_list.clear()  # 清空
+        directory = self.m3u_directory
+        if directory:
+            self.playlist_directory = directory
+            self.m3u_path_list.clear()  # 清空
 
-                # 记录当前选中项（如果未选择则默认第一项）
-                selection_index = self.m3u_listbox.curselection()
-                if not selection_index:
-                    selection_index = (0,)
+            # 记录当前选中项（如果未选择则默认第一项）
+            selection_index = self.m3u_listbox.curselection()
+            if not selection_index:
+                selection_index = (0,)
 
-                self.m3u_listbox.delete(0, tk.END)
-                # 遍历目录及其子目录下的所有文件，将 .m3u 文件添加到文件列表框中
-                for root, _, files in os.walk(directory):
-                    for file in files:
-                        if file.endswith(".m3u"):
-                            self.m3u_listbox.insert(tk.END, file)
-                            self.m3u_path_list.append(os.path.join(root, file))
-                self.m3u_info.config(text=f"m3u文件总数：{len(self.m3u_path_list)}")
+            self.m3u_listbox.delete(0, tk.END)
+            # 遍历目录及其子目录下的所有文件，将 .m3u 文件添加到文件列表框中
+            for root, _, files in os.walk(directory):
+                for file in files:
+                    if file.endswith(".m3u"):
+                        self.m3u_listbox.insert(tk.END, file)
+                        self.m3u_path_list.append(os.path.join(root, file))
+            self.m3u_info.config(text=f"m3u文件总数：{len(self.m3u_path_list)}")
 
-                # 设置选中的索引
-                self.m3u_listbox.selection_set(selection_index)
-                self.show_selected_playlist()
+            # 设置选中的索引
+            self.m3u_listbox.selection_set(selection_index)
+            self.show_selected_playlist()
 
-    def show_selected_playlist(self, event: tk.Event[tk.Listbox] | None = None):
+    def show_selected_playlist(self, event: Optional["tk.Event[tk.Listbox]"] = None):
         # 当用户选择播放列表文件时，显示该文件中的歌曲列表
         selection = self.m3u_listbox.curselection()
         if selection:
@@ -274,7 +279,7 @@ class M3UManagerApp:
                 self.playlist_info.config(text=f"列表内歌曲总数：{self.song_listbox.size()}")
 
     def open_merge_m3u_window(self):
-        self.merge_m3u_window = MergeM3UWindow(self.root, self.m3u_path_list, self.settings.get("m3u_directory"))
+        self.merge_m3u_window = MergeM3UWindow(self.root, self.m3u_path_list, self.m3u_directory)
         # 用以解决弹出警告窗口后该窗口被销毁的问题
         self.merge_m3u_window.top.wait_window()
         self.load_playlist_files()
@@ -326,23 +331,29 @@ class M3UManagerApp:
 
         self.load_playlist_files()
 
-    def open_m3u_folder(self, event: tk.Event[tk.Label]):
+    def open_m3u_folder(self, event: "tk.Event[tk.Label]"):
         # 打开m3u库文件夹
         event.widget.config(fg="purple4")
-        os.system(f"explorer {self.settings['m3u_directory']}")
+        os.system(f"explorer {self.m3u_directory}")
 
-    def open_playlist(self, event: tk.Event[tk.Label]):
+    def open_playlist(self, event: "tk.Event[tk.Label]"):
         # 打开m3u文件
         event.widget.config(fg="purple4")
         file_path = self.m3u_path_list[self.m3u_listbox.curselection()[0]]
         os.startfile(file_path)
 
 
+@dataclass
+class Args:
+    m3u_dir: str | None = None
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="M3U Manager Application")
     parser.add_argument("--m3u_dir", "-d", type=str, help="指定M3U目录（会覆盖setting.json中的目录）")
-    args = parser.parse_args()
+    arg_namespace = parser.parse_args()
+    args = Args(m3u_dir=arg_namespace.m3u_dir)
 
     root = tk.Tk()
-    app = M3UManagerApp(root)
+    app = M3UManagerApp(root, args.m3u_dir)
     root.mainloop()

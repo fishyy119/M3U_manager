@@ -1,5 +1,5 @@
 import json
-from typing import List, TypedDict, cast
+from typing import List, Literal, Tuple, TypedDict, cast
 
 
 class SettingsDict(TypedDict):
@@ -8,6 +8,9 @@ class SettingsDict(TypedDict):
     white_extension: List[str]
     black_list_state: bool
     black_song: List[str]
+
+
+LoaderResponse = Tuple[Literal[True], SettingsDict] | Tuple[Literal[False], str]
 
 
 class SettingLoader:
@@ -19,19 +22,31 @@ class SettingLoader:
         "black_song": ["sample.mp3"],
     }
 
-    def __init__(self, filename: str) -> None:
-        self.filename = filename
+    def __init__(self, filename: str, gui: bool = False) -> None:
+        """
 
-    def read_settings(self) -> SettingsDict:
+        Args:
+            filename (str): _description_
+            gui (bool, optional): gui模式下，需要返回错误信息。否则控制台报错后直接退出。
+        """
+        print(f"{__file__} init")
+        self.filename = filename
+        self.gui_flag = gui
+
+    def read_settings(self) -> LoaderResponse:
         try:
             with open(self.filename, "r", encoding="utf-8") as f:
-                settings = json.load(f)
+                settings = cast(SettingsDict, json.load(f))
+            return True, settings
         except FileNotFoundError:
-            print(f"未发现设置文件'{self.filename}'，已自动创建，请前往设置")
             settings = self.DEFAULT_SETTINGS
             self.save_settings(cast(SettingsDict, settings))  # TODO: 验证
-            exit(0)
-        return settings
+            msg = f"未发现设置文件'{self.filename}'，已自动创建，请前往设置"
+            if not self.gui_flag:
+                print(msg)
+                exit(0)
+            else:
+                return False, msg
 
     def save_settings(self, settings: SettingsDict) -> None:
         with open(self.filename, "w", encoding="utf-8") as f:
