@@ -1,8 +1,10 @@
-import json
+import argparse
 import os
 import random
 import tkinter as tk
-from tkinter import filedialog, messagebox, simpledialog
+import tkinter.messagebox as messagebox
+from tkinter import messagebox, simpledialog
+from typing import List
 
 from MergeM3UWindow import MergeM3UWindow
 from SettingLoader import SettingLoader
@@ -15,7 +17,7 @@ todo:
 """
 
 
-class M3UMManagerApp:
+class M3UManagerApp:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("M3U Manager")
@@ -75,7 +77,7 @@ class M3UMManagerApp:
         ############################################################################
         # Lisbbox相关
         # 存储m3u文件的路径(与m3u_listbox同序)
-        self.m3u_path_list = []
+        self.m3u_path_list: List[str] = []
 
         # 列表框：m3u列表
         self.m3u_listbox = tk.Listbox(root, width=60, height=30)
@@ -141,7 +143,7 @@ class M3UMManagerApp:
                 self.m3u_listbox.selection_set(selection_index)
                 self.show_selected_playlist()
 
-    def show_selected_playlist(self, event=None):
+    def show_selected_playlist(self, event: tk.Event[tk.Listbox] | None = None):
         # 当用户选择播放列表文件时，显示该文件中的歌曲列表
         selection = self.m3u_listbox.curselection()
         if selection:
@@ -155,7 +157,7 @@ class M3UMManagerApp:
                         self.song_listbox.insert(tk.END, os.path.basename(line))
             self.playlist_info.config(text=f"列表内歌曲总数：{self.song_listbox.size()}")
 
-    def edit_m3u(self, m3u_path, operation, index=0):
+    def edit_m3u(self, m3u_path: str, operation: str, index: int = 0):
         """
         对m3u进行操作，包括打乱、去重、上移、下移、置顶、删除
             operation:
@@ -163,7 +165,7 @@ class M3UMManagerApp:
             index:
                 对于后四个，需要操作的序号（单个）
         """
-        playlist = []
+        playlist: List[str] = []
         with open(m3u_path, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
@@ -176,7 +178,7 @@ class M3UMManagerApp:
             random.seed()
             random.shuffle(list_index)
         elif operation == "deduplicate":
-            tmp_playlist = []  # 用于去重
+            tmp_playlist: List[str] = []  # 用于去重
             for i, song in enumerate(playlist):
                 if not song in tmp_playlist:
                     tmp_playlist.append(song)
@@ -211,7 +213,7 @@ class M3UMManagerApp:
             m3u_path = self.m3u_path_list[files[0]]
             self.edit_m3u(m3u_path, "shuffle")
         else:
-            tk.messagebox.showerror("Error", "没有指定m3u文件")
+            messagebox.showerror("Error", "没有指定m3u文件")
 
     def deduplicate_playlist(self):
         # 去重选中的播放列表
@@ -221,7 +223,7 @@ class M3UMManagerApp:
             self.edit_m3u(m3u_path, "deduplicate")
             self.playlist_info.config(text=f"列表内歌曲总数：{self.song_listbox.size()}")
         else:
-            tk.messagebox.showerror("Error", "没有指定m3u文件")
+            messagebox.showerror("Error", "没有指定m3u文件")
 
     def move_up(self):
         selection = self.song_listbox.curselection()
@@ -286,7 +288,7 @@ class M3UMManagerApp:
         selected_index = self.m3u_listbox.curselection()
         if selected_index:
             # 弹出确认提示框
-            result = tk.messagebox.askokcancel("确认删除", "确定要删除选中的 m3u 文件吗？")
+            result = messagebox.askokcancel("确认删除", "确定要删除选中的 m3u 文件吗？")
             if result:
                 # 执行删除操作
                 file_to_delete = self.m3u_path_list[selected_index[0]]
@@ -324,12 +326,12 @@ class M3UMManagerApp:
 
         self.load_playlist_files()
 
-    def open_m3u_folder(self, event: tk.Event):
+    def open_m3u_folder(self, event: tk.Event[tk.Label]):
         # 打开m3u库文件夹
         event.widget.config(fg="purple4")
         os.system(f"explorer {self.settings['m3u_directory']}")
 
-    def open_playlist(self, event: tk.Event):
+    def open_playlist(self, event: tk.Event[tk.Label]):
         # 打开m3u文件
         event.widget.config(fg="purple4")
         file_path = self.m3u_path_list[self.m3u_listbox.curselection()[0]]
@@ -337,7 +339,10 @@ class M3UMManagerApp:
 
 
 if __name__ == "__main__":
-    # 创建 Tkinter 窗口，并启动应用程序
+    parser = argparse.ArgumentParser(description="M3U Manager Application")
+    parser.add_argument("--m3u_dir", "-d", type=str, help="指定M3U目录（会覆盖setting.json中的目录）")
+    args = parser.parse_args()
+
     root = tk.Tk()
-    app = M3UMManagerApp(root)
+    app = M3UManagerApp(root)
     root.mainloop()

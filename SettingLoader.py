@@ -1,9 +1,13 @@
 import json
-from typing import TypedDict, cast
+from typing import List, TypedDict, cast
 
 
 class SettingsDict(TypedDict):
+    root_dir: str
     m3u_directory: str
+    white_extension: List[str]
+    black_list_state: bool
+    black_song: List[str]
 
 
 class SettingLoader:

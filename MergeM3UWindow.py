@@ -1,19 +1,18 @@
 import os
 import tkinter as tk
+import tkinter.messagebox as messagebox
+from typing import List
 
 
 class MergeM3UWindow:
     """
     子窗口：由已有m3u文件生成新m3u文件
-        parent：
-            父窗口（即主窗口）
-        m3u_path_list：
-            所有m3u的路径
-        m3u_directory：
-            新创建的m3u的根目录
+        - parent: 父窗口（即主窗口）
+        - m3u_path_list: 所有m3u的路径
+        - m3u_directory: 新创建的m3u的根目录
     """
 
-    def __init__(self, parent, m3u_path_list, m3u_directory):
+    def __init__(self, parent: tk.Tk, m3u_path_list: List[str], m3u_directory: str):
         self.parent = parent
         self.m3u_path_list = m3u_path_list
         self.m3u_directory = m3u_directory
@@ -58,7 +57,7 @@ class MergeM3UWindow:
         if files:
             output_name = self.entry.get().strip()
             if output_name:
-                songs = []
+                songs: List[str] = []
                 for index in files:
                     # 需要保证listbox与m3u_path_list的同序
                     m3u_file = self.m3u_path_list[index]
@@ -71,6 +70,6 @@ class MergeM3UWindow:
 
                 self.top.destroy()
             else:
-                tk.messagebox.showerror("Error", "需输入有效文件名")
+                messagebox.showerror("Error", "需输入有效文件名")
         else:
-            tk.messagebox.showerror("Error", "需选择文件")
+            messagebox.showerror("Error", "需选择文件")

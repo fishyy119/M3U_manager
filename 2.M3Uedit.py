@@ -1,5 +1,6 @@
 import json
 import os
+from typing import List
 
 from SettingLoader import SettingLoader
 
@@ -11,7 +12,7 @@ def update_m3u_file(m3u_directory: str, input_file: str, output_file: str, mappi
     with open(mapping_file, "r", encoding="utf-8") as f:
         path_mapping = json.load(f)
 
-    updated_paths = []
+    updated_paths: List[str] = []
     input_file = os.path.join(m3u_directory, input_file)
     output_file = os.path.join(m3u_directory, output_file)
     # 读取旧的 m3u 文件并替换路径
