@@ -19,9 +19,15 @@ todo:
 
 
 class M3UManagerApp:
-    def __init__(self, root: tk.Tk, m3u_directory: str | None = None):
+    def __init__(
+        self,
+        root: tk.Tk,
+        m3u_directory: str | None = None,
+        pre_select: str | None = None,
+    ):
         self.root = root
         self.root.title("M3U Manager")
+        self.pre_select = pre_select
         if m3u_directory is not None:
             self.m3u_directory = m3u_directory
         else:
@@ -130,21 +136,30 @@ class M3UManagerApp:
             self.playlist_directory = directory
             self.m3u_path_list.clear()  # 清空
 
-            # 记录当前选中项（如果未选择则默认第一项）
+            # 记录当前选中项（如果未选择则说明是初始化，在后面进行初始化）
             selection_index = self.m3u_listbox.curselection()
-            if not selection_index:
-                selection_index = (0,)
 
             self.m3u_listbox.delete(0, tk.END)
+            m3u_name_list: List[str] = []
             # 遍历目录及其子目录下的所有文件，将 .m3u 文件添加到文件列表框中
             for root, _, files in os.walk(directory):
                 for file in files:
                     if file.endswith(".m3u"):
                         self.m3u_listbox.insert(tk.END, file)
+                        m3u_name_list.append(file)
                         self.m3u_path_list.append(os.path.join(root, file))
             self.m3u_info.config(text=f"m3u文件总数：{len(self.m3u_path_list)}")
 
             # 设置选中的索引
+            if not selection_index:
+                if self.pre_select:
+                    try:
+                        selection_index = m3u_name_list.index(self.pre_select)
+                    except ValueError:
+                        selection_index = 0
+                else:
+                    selection_index = 0
+
             self.m3u_listbox.selection_set(selection_index)
             self.show_selected_playlist()
 
@@ -329,7 +344,7 @@ class M3UManagerApp:
         except Exception as e:
             messagebox.showerror("Error", f"文件重命名失败：{e}")
 
-        self.load_playlist_files()
+        self.load_playlist_files()  # FIXME: 无法追踪选中重命名后的m3u
 
     def open_m3u_folder(self, event: "tk.Event[tk.Label]"):
         # 打开m3u库文件夹
@@ -346,14 +361,23 @@ class M3UManagerApp:
 @dataclass
 class Args:
     m3u_dir: str | None = None
+    select_m3u_name: str | None = None
+
+    def __post_init__(self):
+        if self.select_m3u_name and not self.select_m3u_name.endswith(".m3u"):
+            self.select_m3u_name += ".m3u"
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="M3U Manager Application")
     parser.add_argument("--m3u_dir", "-d", type=str, help="指定M3U目录（会覆盖setting.json中的目录）")
+    parser.add_argument("--select-m3u", "-s", type=str, help="预先选定m3u文件名，打开后自动选中该文件")
     arg_namespace = parser.parse_args()
-    args = Args(m3u_dir=arg_namespace.m3u_dir)
+    args = Args(
+        m3u_dir=arg_namespace.m3u_dir,
+        select_m3u_name=arg_namespace.select_m3u,
+    )
 
     root = tk.Tk()
-    app = M3UManagerApp(root, args.m3u_dir)
+    app = M3UManagerApp(root, args.m3u_dir, args.select_m3u_name)
     root.mainloop()
