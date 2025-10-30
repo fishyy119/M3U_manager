@@ -5,6 +5,7 @@ import random
 import tkinter as tk
 import tkinter.messagebox as messagebox
 from dataclasses import dataclass
+from pathlib import Path
 from tkinter import messagebox, simpledialog
 from typing import List, Optional, cast
 
@@ -324,11 +325,14 @@ class M3UManagerApp:
                 self.refresh_directory()
 
     def rename_m3u(self):
-        # 重命名m3u文件
+        """重命名m3u文件"""
         selected_index = self.m3u_listbox.curselection()
-        old_path = self.m3u_path_list[selected_index[0]]
-        # 弹出对话框，让用户输入新的文件名
-        new_name = simpledialog.askstring("重命名", "输入新文件名（无需输入后缀名）：")
+        if not selected_index:
+            return
+
+        old_path = Path(self.m3u_path_list[selected_index[0]])
+        old_name = old_path.stem
+        new_name = simpledialog.askstring("重命名", "输入新文件名（无需输入后缀名）：", initialvalue=old_name)
 
         # 检查用户是否点击了取消按钮或没有输入任何内容
         if new_name is None:
@@ -338,16 +342,14 @@ class M3UManagerApp:
             return
 
         # 构建新的文件路径
-        directory = os.path.dirname(old_path)
-        new_path = os.path.join(directory, new_name)
-
+        new_path = old_path.with_name(new_name)
         try:
             # 添加.m3u扩展名
-            if not new_path.endswith(".m3u"):
-                new_path += ".m3u"
+            if new_path.suffix != ".m3u":
+                new_path = new_path.with_suffix(".m3u")
 
             # 重命名文件
-            os.rename(old_path, new_path)
+            old_path.rename(new_path)
         except Exception as e:
             messagebox.showerror("Error", f"文件重命名失败：{e}")
 
