@@ -1,4 +1,5 @@
 import argparse
+import locale
 import os
 import random
 import tkinter as tk
@@ -145,10 +146,16 @@ class M3UManagerApp:
             for root, _, files in os.walk(directory):
                 for file in files:
                     if file.endswith(".m3u"):
-                        self.m3u_listbox.insert(tk.END, file)
                         m3u_name_list.append(file)
                         self.m3u_path_list.append(os.path.join(root, file))
             self.m3u_info.config(text=f"m3u文件总数：{len(self.m3u_path_list)}")
+
+            # 生成排序索引
+            sorted_indices = sorted(range(len(m3u_name_list)), key=lambda i: locale.strxfrm(m3u_name_list[i]))
+            m3u_name_list = [m3u_name_list[i] for i in sorted_indices]
+            self.m3u_path_list = [self.m3u_path_list[i] for i in sorted_indices]
+            for m3u in m3u_name_list:
+                self.m3u_listbox.insert(tk.END, m3u)
 
             # 设置选中的索引
             if not selection_index:
@@ -369,6 +376,9 @@ class Args:
 
 
 if __name__ == "__main__":
+    current_locale = locale.getlocale()
+    locale.setlocale(locale.LC_ALL, current_locale)
+
     parser = argparse.ArgumentParser(description="M3U Manager Application")
     parser.add_argument("--m3u_dir", "-d", type=str, help="指定M3U目录（会覆盖setting.json中的目录）")
     parser.add_argument("--select-m3u", "-s", type=str, help="预先选定m3u文件名，打开后自动选中该文件")
