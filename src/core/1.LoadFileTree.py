@@ -1,8 +1,8 @@
 import json
 import os
 
-from FileTreeMatcher import FileTreeMatcher
-from SettingLoader import SettingLoader
+from src.utils.file_tree_matcher import FileTreeMatcher
+from src.utils.setting_loder import SettingLoader
 
 """
 todo:

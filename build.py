@@ -21,7 +21,7 @@ nuitka_args = [
     # UPX压缩使用参数，加载时间翻倍，体积压缩效果不明显
     # "--onefile-no-compression",
     # "--enable-plugin=upx",
-    f"--windows-icon-from-ico={project_root / 'img/favicon.ico'}",
+    f"--windows-icon-from-ico={project_root / 'assets/favicon.ico'}",
     "--product-name=M3U Manager",
     "--product-version=0.1.1",
     "--file-version=0.1.1",

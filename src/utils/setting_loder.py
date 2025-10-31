@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from typing import List, Literal, Tuple, TypedDict, cast
 
 
@@ -22,7 +23,7 @@ class SettingLoader:
         "black_song": ["sample.mp3"],
     }
 
-    def __init__(self, filename: str, gui: bool = False) -> None:
+    def __init__(self, setting_path: Path, gui: bool = False) -> None:
         """
 
         Args:
@@ -30,18 +31,18 @@ class SettingLoader:
             gui (bool, optional): gui模式下，需要返回错误信息。否则控制台报错后直接退出。
         """
         print(f"{__file__} init")
-        self.filename = filename
+        self.setting_path = setting_path
         self.gui_flag = gui
 
     def read_settings(self) -> LoaderResponse:
         try:
-            with open(self.filename, "r", encoding="utf-8") as f:
+            with open(self.setting_path, "r", encoding="utf-8") as f:
                 settings = cast(SettingsDict, json.load(f))
             return True, settings
         except FileNotFoundError:
             settings = self.DEFAULT_SETTINGS
             self.save_settings(cast(SettingsDict, settings))  # TODO: 验证
-            msg = f"未发现设置文件'{self.filename}'，已自动创建，请前往设置"
+            msg = f"未发现设置文件'{self.setting_path}'，已自动创建，请前往设置"
             if not self.gui_flag:
                 print(msg)
                 exit(0)
@@ -49,5 +50,5 @@ class SettingLoader:
                 return False, msg
 
     def save_settings(self, settings: SettingsDict) -> None:
-        with open(self.filename, "w", encoding="utf-8") as f:
+        with open(self.setting_path, "w", encoding="utf-8") as f:
             json.dump(settings, f, indent=4)
