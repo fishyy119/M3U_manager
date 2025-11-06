@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
 import tkinter.messagebox as messagebox
+from pathlib import Path
 from typing import List
 
 
@@ -12,7 +13,7 @@ class MergeM3UWindow:
         - m3u_directory: 新创建的m3u的根目录
     """
 
-    def __init__(self, parent: tk.Tk, m3u_path_list: List[str], m3u_directory: str):
+    def __init__(self, parent: tk.Tk, m3u_path_list: List[Path], m3u_directory: str):
         self.parent = parent
         self.m3u_path_list = m3u_path_list
         self.m3u_directory = m3u_directory

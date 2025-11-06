@@ -87,7 +87,7 @@ class M3UManagerApp:
         ############################################################################
         # Lisbbox相关
         # 存储m3u文件的路径(与m3u_listbox同序)
-        self.m3u_path_list: List[str] = []
+        self.m3u_path_list: List[Path] = []
 
         # 列表框：m3u列表
         self.m3u_listbox = tk.Listbox(root, width=60, height=30)
@@ -127,7 +127,7 @@ class M3UManagerApp:
         # 加载m3u文件
         self.load_playlist_files()
 
-    def load_playlist_files(self):
+    def load_playlist_files(self, focus: str | None = None):
         directory = self.m3u_directory
         if directory:
             self.playlist_directory = directory
@@ -135,18 +135,17 @@ class M3UManagerApp:
 
             # 记录当前选中项（如果未选择则说明是初始化，在后面进行初始化）
             selection_index = self.m3u_listbox.curselection()
-
             self.m3u_listbox.delete(0, tk.END)
             m3u_name_list: List[str] = []
+
             # 遍历目录及其子目录下的所有文件，将 .m3u 文件添加到文件列表框中
-            for root, _, files in os.walk(directory):
-                for file in files:
-                    if file.endswith(".m3u"):
-                        m3u_name_list.append(file)
-                        self.m3u_path_list.append(os.path.join(root, file))
+            for path in Path(directory).rglob("*.m3u"):
+                m3u_name_list.append(path.name)
+                self.m3u_path_list.append(path)
+
             self.m3u_info.config(text=f"m3u文件总数：{len(self.m3u_path_list)}")
 
-            # 生成排序索引
+            # 排序并插入listbox
             sorted_indices = sorted(range(len(m3u_name_list)), key=lambda i: locale.strxfrm(m3u_name_list[i]))
             m3u_name_list = [m3u_name_list[i] for i in sorted_indices]
             self.m3u_path_list = [self.m3u_path_list[i] for i in sorted_indices]
@@ -180,7 +179,7 @@ class M3UManagerApp:
                         self.song_listbox.insert(tk.END, os.path.basename(line))
             self.playlist_info.config(text=f"列表内歌曲总数：{self.song_listbox.size()}")
 
-    def edit_m3u(self, m3u_path: str, operation: str, index: int = 0):
+    def edit_m3u(self, m3u_path: Path, operation: str, index: int = 0):
         """
         对m3u进行操作，包括打乱、去重、上移、下移、置顶、删除
             operation:
@@ -227,7 +226,7 @@ class M3UManagerApp:
                 f.write(f"{playlist[index]}\n")
         # 对于打乱和去重，需要重新加载一下
         if operation == "shuffle" or operation == "deduplicate":
-            self.load_playlist_files()
+            self.show_selected_playlist()
 
     def shuffle_playlist(self):
         # 打乱选中的播放列表
@@ -315,9 +314,9 @@ class M3UManagerApp:
             if result:
                 # 执行删除操作
                 file_to_delete = self.m3u_path_list[selected_index[0]]
-                os.remove(file_to_delete)
+                file_to_delete.unlink()
                 # 更新列表框
-                self.refresh_directory()
+                self.load_playlist_files()
 
     def rename_m3u(self):
         """重命名m3u文件"""
