@@ -3,8 +3,10 @@ import os
 import random
 import tkinter as tk
 import tkinter.messagebox as messagebox
+import traceback
 from pathlib import Path
 from tkinter import messagebox, simpledialog
+from types import TracebackType
 from typing import List, Optional, cast
 
 from src.gui.merge_m3u_window import MergeM3UWindow
@@ -23,6 +25,7 @@ class M3UManagerApp:
         locale.setlocale(locale.LC_ALL, current_locale)
 
         self.root = root
+        self.root.report_callback_exception = self.show_error
         self.root.title("M3U Manager")
         if m3u_directory is not None:
             self.m3u_directory = m3u_directory
@@ -353,3 +356,10 @@ class M3UManagerApp:
         event.widget.config(fg="purple4")
         file_path = self.m3u_path_list[self.m3u_listbox.curselection()[0]]
         os.startfile(file_path)
+
+    def show_error(self, exc: type[BaseException], val: BaseException, tb: TracebackType | None) -> None:
+        err = "".join(traceback.format_exception(exc, val, tb))
+        messagebox.showerror("Unhandled Exception", err)
+
+    def run(self):
+        self.root.mainloop()

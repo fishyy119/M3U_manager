@@ -24,7 +24,6 @@ class Args:
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description="M3U Manager Application")
     parser.add_argument("--m3u_dir", "-d", type=str, help="指定M3U目录（会覆盖setting.json中的目录）")
     parser.add_argument("--select-m3u", "-s", type=str, help="预先选定m3u文件名，打开后自动选中该文件")
@@ -41,4 +40,4 @@ if __name__ == "__main__":
         m3u_directory=args.m3u_dir,
         pre_select=args.select_m3u_name,
     )
-    root.mainloop()
+    app.run()
