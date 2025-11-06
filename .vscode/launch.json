@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "name": "main.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            // "args": "${command:pickArgs}"  // 这个会调起一个对话框
+            "args": ""
+        },
+    ]
+}

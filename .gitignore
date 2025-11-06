@@ -9,3 +9,4 @@ main.onefile-build/
 M3U Manager.exe
 
 !pyrightconfig.json
+!.vscode/*

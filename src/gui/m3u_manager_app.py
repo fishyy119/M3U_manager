@@ -24,7 +24,6 @@ class M3UManagerApp:
 
         self.root = root
         self.root.title("M3U Manager")
-        self.pre_select = pre_select
         if m3u_directory is not None:
             self.m3u_directory = m3u_directory
         else:
@@ -125,9 +124,9 @@ class M3UManagerApp:
         ############################################################################
 
         # 加载m3u文件
-        self.load_playlist_files()
+        self.load_playlist_files(force_select=pre_select)
 
-    def load_playlist_files(self, focus: str | None = None):
+    def load_playlist_files(self, force_select: str | None = None):
         directory = self.m3u_directory
         if directory:
             self.playlist_directory = directory
@@ -136,31 +135,26 @@ class M3UManagerApp:
             # 记录当前选中项（如果未选择则说明是初始化，在后面进行初始化）
             selection_index = self.m3u_listbox.curselection()
             self.m3u_listbox.delete(0, tk.END)
-            m3u_name_list: List[str] = []
 
             # 遍历目录及其子目录下的所有文件，将 .m3u 文件添加到文件列表框中
             for path in Path(directory).rglob("*.m3u"):
-                m3u_name_list.append(path.name)
+                # m3u_name_list.append(path.name)
                 self.m3u_path_list.append(path)
 
             self.m3u_info.config(text=f"m3u文件总数：{len(self.m3u_path_list)}")
 
             # 排序并插入listbox
-            sorted_indices = sorted(range(len(m3u_name_list)), key=lambda i: locale.strxfrm(m3u_name_list[i]))
-            m3u_name_list = [m3u_name_list[i] for i in sorted_indices]
-            self.m3u_path_list = [self.m3u_path_list[i] for i in sorted_indices]
-            for m3u in m3u_name_list:
-                self.m3u_listbox.insert(tk.END, m3u)
+            self.m3u_path_list.sort(key=lambda p: locale.strxfrm(p.name))
+            for m3u in self.m3u_path_list:
+                self.m3u_listbox.insert(tk.END, m3u.name)
 
             # 设置选中的索引
-            if not selection_index:
-                if self.pre_select:
-                    try:
-                        selection_index = m3u_name_list.index(self.pre_select)
-                    except ValueError:
-                        selection_index = 0
-                else:
-                    selection_index = 0
+            selection_index = 0 if not selection_index else selection_index
+            if force_select:
+                selection_index = next(
+                    (i for i, p in enumerate(self.m3u_path_list) if p.stem == force_select),
+                    selection_index,
+                )
 
             self.m3u_listbox.selection_set(selection_index)
             self.show_selected_playlist()
@@ -324,7 +318,7 @@ class M3UManagerApp:
         if not selected_index:
             return
 
-        old_path = Path(self.m3u_path_list[selected_index[0]])
+        old_path = self.m3u_path_list[selected_index[0]]
         old_name = old_path.stem
         new_name = simpledialog.askstring("重命名", "输入新文件名（无需输入后缀名）：", initialvalue=old_name)
 
@@ -347,7 +341,7 @@ class M3UManagerApp:
         except Exception as e:
             messagebox.showerror("Error", f"文件重命名失败：{e}")
 
-        self.load_playlist_files()  # FIXME: 无法追踪选中重命名后的m3u
+        self.load_playlist_files(force_select=new_path.stem)
 
     def open_m3u_folder(self, event: "tk.Event[tk.Label]"):
         # 打开m3u库文件夹
