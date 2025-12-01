@@ -7,9 +7,10 @@ import traceback
 from pathlib import Path
 from tkinter import messagebox, simpledialog
 from types import TracebackType
-from typing import List, Optional, cast
+from typing import List, Literal, Optional, cast
 
 from ..utils.setting_loder import SettingLoader, SettingsDict
+from ..utils.shuffle import weighted_fisher_yates_index
 from .merge_m3u_window import MergeM3UWindow
 
 
@@ -176,7 +177,9 @@ class M3UManagerApp:
                         self.song_listbox.insert(tk.END, os.path.basename(line))
             self.playlist_info.config(text=f"列表内歌曲总数：{self.song_listbox.size()}")
 
-    def edit_m3u(self, m3u_path: Path, operation: str, index: int = 0):
+    def edit_m3u(
+        self, m3u_path: Path, operation: Literal["shuffle", "deduplicate", "up", "down", "top", "del"], index: int = 0
+    ):
         """
         对m3u进行操作，包括打乱、去重、上移、下移、置顶、删除
             operation:
@@ -195,7 +198,7 @@ class M3UManagerApp:
         list_index = list(range(len(playlist)))
         if operation == "shuffle":
             random.seed()
-            random.shuffle(list_index)
+            list_index = weighted_fisher_yates_index(playlist)
         elif operation == "deduplicate":
             tmp_playlist: List[str] = []  # 用于去重
             for i, song in enumerate(playlist):
