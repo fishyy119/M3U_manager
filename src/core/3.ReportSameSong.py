@@ -1,8 +1,8 @@
 import json
 import os
 
-from src.utils.file_tree_matcher import FileTreeMatcher
-from src.utils.setting_loder import SettingLoader
+from ..utils.file_tree_matcher import FileTreeMatcher
+from ..utils.setting_loder import SettingLoader
 
 """
 报告音乐库中同名音乐

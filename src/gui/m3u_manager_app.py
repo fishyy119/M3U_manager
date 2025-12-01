@@ -9,8 +9,8 @@ from tkinter import messagebox, simpledialog
 from types import TracebackType
 from typing import List, Optional, cast
 
-from src.gui.merge_m3u_window import MergeM3UWindow
-from src.utils.setting_loder import SettingLoader, SettingsDict
+from ..utils.setting_loder import SettingLoader, SettingsDict
+from .merge_m3u_window import MergeM3UWindow
 
 
 class M3UManagerApp:

@@ -2,7 +2,7 @@ import json
 import os
 from typing import List
 
-from src.utils.setting_loder import SettingLoader
+from ..utils.setting_loder import SettingLoader
 
 
 def update_m3u_file(m3u_directory: str, input_file: str, output_file: str, mapping_file: str) -> int:
