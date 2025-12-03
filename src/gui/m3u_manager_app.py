@@ -156,7 +156,7 @@ class M3UManagerApp:
             selection_index = 0 if not selection_index else selection_index
             if force_select:
                 selection_index = next(
-                    (i for i, p in enumerate(self.m3u_path_list) if p.stem == force_select),
+                    (i for i, p in enumerate(self.m3u_path_list) if p.name == force_select),
                     selection_index,
                 )
 
