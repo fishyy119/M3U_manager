@@ -166,12 +166,25 @@ class M3UManagerApp:
             # 从选定的 .m3u 文件中读取歌曲列表，并在歌曲列表框中显示
             with open(playlist_file, "r", encoding="utf8") as f:
                 for line in f:
-                    if line.strip() and not line.startswith("#"):
+                    line = line.strip()
+                    if line and not line.startswith("#"):
                         self.song_listbox.insert(tk.END, os.path.basename(line))
+                        index = self.song_listbox.size() - 1
+
+                        if not os.path.exists(line):
+                            self.song_listbox.itemconfig(index, fg="red", selectforeground="#ffb3b3")
+                        else:
+                            base, _ = os.path.splitext(line)
+                            if os.path.exists(base + ".lrc"):
+                                self.song_listbox.itemconfig(index, fg="darkgreen")
+
             self.playlist_info.config(text=f"列表内歌曲总数：{self.song_listbox.size()}")
 
     def edit_m3u(
-        self, m3u_path: Path, operation: Literal["shuffle", "deduplicate", "up", "down", "top", "del"], index: int = 0
+        self,
+        m3u_path: Path,
+        operation: Literal["shuffle", "deduplicate", "up", "down", "top", "del"],
+        index: int = 0,
     ):
         """
         对m3u进行操作，包括打乱、去重、上移、下移、置顶、删除
@@ -217,9 +230,9 @@ class M3UManagerApp:
         with open(m3u_path, "w", encoding="utf-8") as f:
             for index in list_index:
                 f.write(f"{playlist[index]}\n")
-        # 对于打乱和去重，需要重新加载一下
-        if operation == "shuffle" or operation == "deduplicate":
-            self.show_selected_playlist()
+
+        # 直接根据最新文件刷新，避免手动操作UI数组
+        self.show_selected_playlist()
 
     def shuffle_playlist(self):
         # 打乱选中的播放列表
@@ -247,11 +260,8 @@ class M3UManagerApp:
             i = selection[0]
             # 顶端自然不需要移动
             if i > 0:
-                self.song_listbox.insert(i - 1, self.song_listbox.get(i))
-                self.song_listbox.delete(i + 1)
-                self.song_listbox.selection_clear(0, tk.END)
-                self.song_listbox.selection_set(i - 1)
                 self.edit_m3u(m3u_path, "up", i)
+                self.song_listbox.selection_set(i - 1)
 
     def move_down(self):
         selection = self.song_listbox.curselection()
@@ -260,11 +270,8 @@ class M3UManagerApp:
             i = selection[0]
             # 末端不需要移动
             if i < self.song_listbox.size() - 1:
-                self.song_listbox.insert(i + 2, self.song_listbox.get(i))
-                self.song_listbox.delete(i)
-                self.song_listbox.selection_clear(0, tk.END)
-                self.song_listbox.selection_set(i + 1)
                 self.edit_m3u(m3u_path, "down", i)
+                self.song_listbox.selection_set(i + 1)
 
     def move_top(self):
         selection = self.song_listbox.curselection()
@@ -273,18 +280,14 @@ class M3UManagerApp:
             i = selection[0]
             # 顶端不需要移动
             if i > 0:
-                self.song_listbox.insert(0, self.song_listbox.get(i))
-                self.song_listbox.delete(i + 1)
-                self.song_listbox.selection_clear(0, tk.END)
-                self.song_listbox.selection_set(0)
                 self.edit_m3u(m3u_path, "top", i)
+                self.song_listbox.selection_set(0)
 
     def delete(self):
         selection = self.song_listbox.curselection()
         m3u_path = self.m3u_path_list[self.m3u_listbox.curselection()[0]]
         if selection:
             for i in reversed(selection):
-                self.song_listbox.delete(i)
                 self.edit_m3u(m3u_path, "del", i)
                 self.playlist_info.config(text=f"列表内歌曲总数：{self.song_listbox.size()}")
 
