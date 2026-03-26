@@ -13,7 +13,7 @@ class MergeM3UWindow:
         - m3u_directory: 新创建的m3u的根目录
     """
 
-    def __init__(self, parent: tk.Tk, m3u_path_list: List[Path], m3u_directory: str):
+    def __init__(self, parent: tk.Tk, m3u_path_list: List[Path], m3u_directory: Path):
         self.parent = parent
         self.m3u_path_list = m3u_path_list
         self.m3u_directory = m3u_directory
@@ -65,7 +65,7 @@ class MergeM3UWindow:
                     with open(m3u_file, "r", encoding="utf-8") as m3u:
                         for line in m3u:
                             songs.append(line)
-                with open(os.path.join(self.m3u_directory, output_name), "w", encoding="utf-8") as f:
+                with open(self.m3u_directory / output_name, "w", encoding="utf-8") as f:
                     for song in songs:
                         f.write(song)
 

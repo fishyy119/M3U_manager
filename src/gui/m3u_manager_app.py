@@ -7,9 +7,8 @@ import traceback
 from pathlib import Path
 from tkinter import messagebox, simpledialog
 from types import TracebackType
-from typing import List, Literal, Optional, cast
+from typing import List, Literal, Optional
 
-from ..utils.setting_loder import SettingLoader, SettingsDict
 from ..utils.shuffle import weighted_fisher_yates_index
 from .merge_m3u_window import MergeM3UWindow
 
@@ -18,8 +17,8 @@ class M3UManagerApp:
     def __init__(
         self,
         root: tk.Tk,
-        setting_path: Path,
-        m3u_directory: str | None = None,
+        library_root: List[Path],
+        m3u_directory: Path,
         pre_select: str | None = None,
     ):
         current_locale = locale.getlocale()
@@ -28,14 +27,8 @@ class M3UManagerApp:
         self.root = root
         self.root.report_callback_exception = self.show_error
         self.root.title("M3U Manager")
-        if m3u_directory is not None:
-            self.m3u_directory = m3u_directory
-        else:
-            success, result = SettingLoader(setting_path).read_settings()
-            if success:
-                self.m3u_directory = cast(SettingsDict, result)["m3u_directory"]
-            else:
-                messagebox.showerror("Error", cast(str, result))
+        self.m3u_directory = m3u_directory
+        self.library_root = library_root
         # self.root.iconbitmap("favicon.ico")
 
         ############################################################################
