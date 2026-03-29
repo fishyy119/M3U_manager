@@ -5,7 +5,6 @@
     - Nuitka: 2.8.4
 """
 
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -23,8 +22,8 @@ nuitka_args = [
     # "--enable-plugin=upx",
     f"--windows-icon-from-ico={project_root / 'assets/favicon.ico'}",
     "--product-name=M3U Manager",
-    "--product-version=0.1.3",
-    "--file-version=0.1.3",
+    "--product-version=0.2.0",
+    "--file-version=0.2.0",
     "--file-description=A simple tool for managing m3u playlists",
     "--output-filename=M3U Manager.exe",
     str(project_root / "main.py"),

@@ -1,3 +1,4 @@
+# pyright: standard
 import locale
 import os
 import random
@@ -7,10 +8,11 @@ import traceback
 from pathlib import Path
 from tkinter import messagebox, simpledialog
 from types import TracebackType
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, overload
 
 from ..utils.shuffle import weighted_fisher_yates_index
 from .merge_m3u_window import MergeM3UWindow
+from .select_from_listbox_window import SelectFromListboxWindow
 
 
 class M3UManagerApp:
@@ -93,7 +95,12 @@ class M3UManagerApp:
 
         # 列表框：歌曲
         self.song_listbox = tk.Listbox(root, width=60, height=30)
+        self.song_listbox.bind("<Button-3>", self.show_song_menu)
         self.song_listbox.configure(activestyle="none", exportselection=False, selectbackground="green")
+
+        # 歌曲列表的右键菜单
+        self.song_menu = tk.Menu(self.root, tearoff=0)
+        self.song_menu.add_command(label="修复路径", command=self.repair_song_path)
 
         ############################################################################
         # 主窗口布局
@@ -163,6 +170,7 @@ class M3UManagerApp:
             index = selection[0]
             playlist_file = self.m3u_path_list[index]
             self.song_listbox.delete(0, tk.END)
+            self.song_status: List[Literal["missing", "has_lyric", "normal"]] = []  # 用于存储每首歌的状态
             # 从选定的 .m3u 文件中读取歌曲列表，并在歌曲列表框中显示
             with open(playlist_file, "r", encoding="utf8") as f:
                 for line in f:
@@ -173,25 +181,77 @@ class M3UManagerApp:
 
                         if not os.path.exists(line):
                             self.song_listbox.itemconfig(index, fg="red", selectforeground="#ffb3b3")
+                            self.song_status.append("missing")
                         else:
                             base, _ = os.path.splitext(line)
                             if os.path.exists(base + ".lrc"):
                                 self.song_listbox.itemconfig(index, fg="darkgreen")
+                                self.song_status.append("has_lyric")
+                            else:
+                                self.song_status.append("normal")
 
             self.playlist_info.config(text=f"列表内歌曲总数：{self.song_listbox.size()}")
+
+    def show_song_menu(self, event: "tk.Event[tk.Listbox]"):
+        """歌曲列表的右键菜单"""
+        # 获取点击位置对应的 index
+        index = self.song_listbox.nearest(event.y)
+
+        # 设置选中项（让右键行为作用在点击的那一行）
+        self.song_listbox.selection_clear(0, tk.END)
+        self.song_listbox.selection_set(index)
+
+        if self.song_status[index] == "missing":
+            self.song_menu.post(event.x_root, event.y_root)
+
+    def repair_song_path(self):
+        selection = self.song_listbox.curselection()
+        if not selection:
+            return
+
+        index = selection[0]
+        song_name = self.song_listbox.get(index)
+
+        search_results: list[Path] = []
+        for r in self.library_root:
+            search_results.extend(p for p in r.rglob(song_name) if p.is_file())
+
+        if len(search_results) == 0:
+            messagebox.showinfo("未找到", f"没有找到 {song_name} 的路径")
+        elif len(search_results) == 1:
+            new_path = search_results[0]
+            m3u_path = self.m3u_path_list[self.m3u_listbox.curselection()[0]]
+            self.edit_m3u(m3u_path, "change_path", index, new_path.as_posix())
+            self.song_listbox.select_set(index)
+        else:
+            # 多于1个候选，弹窗选择
+            def on_select(selected_idx: Optional[int]):
+                if selected_idx is not None:
+                    new_path = search_results[selected_idx]
+                    m3u_path = self.m3u_path_list[self.m3u_listbox.curselection()[0]]
+                    self.edit_m3u(m3u_path, "change_path", index, new_path.as_posix())
+                    self.song_listbox.select_set(index)
+
+            SelectFromListboxWindow(self.root, [str(p) for p in search_results], on_select)
+
+    @overload
+    def edit_m3u(self, m3u_path: Path, operation: Literal["change_path"], index: int, target: str): ...
+
+    @overload
+    def edit_m3u(self, m3u_path: Path, operation: Literal["shuffle", "deduplicate"]): ...
+
+    @overload
+    def edit_m3u(self, m3u_path: Path, operation: Literal["up", "down", "top", "del"], index: int): ...
 
     def edit_m3u(
         self,
         m3u_path: Path,
-        operation: Literal["shuffle", "deduplicate", "up", "down", "top", "del"],
+        operation: Literal["shuffle", "deduplicate", "up", "down", "top", "del", "change_path"],
         index: int = 0,
+        target: str = "",
     ):
         """
-        对m3u进行操作，包括打乱、去重、上移、下移、置顶、删除
-            operation:
-                'shuffle' / 'deduplicate' / 'up' / 'down' / 'top' / 'del'
-            index:
-                对于后四个，需要操作的序号（单个）
+        对m3u进行操作，包括打乱、去重、上移、下移、置顶、删除、修改路径
         """
         playlist: List[str] = []
         with open(m3u_path, "r", encoding="utf-8") as f:
@@ -199,6 +259,9 @@ class M3UManagerApp:
                 line = line.strip()
                 if line and not line.startswith("#"):
                     playlist.append(line)
+
+        if operation == "change_path":
+            playlist[index] = target
 
         # 先对索引列表输出，最后映射
         list_index = list(range(len(playlist)))
