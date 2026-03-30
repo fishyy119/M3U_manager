@@ -12,3 +12,4 @@ M3U Manager.exe
 !.vscode/*
 
 profile*
+.build_cache
